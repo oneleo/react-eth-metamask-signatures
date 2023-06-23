@@ -11,7 +11,7 @@ const signMessage = async ({ setError, token, nonce, to, amount }) => {
     if (!window.ethereum)
       throw new Error("No crypto wallet found. Please install it.");
 
-    await window.ethereum.send("eth_requestAccounts");
+    await window.ethereum.request({ method: "eth_requestAccounts" });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
@@ -29,7 +29,7 @@ const signMessage = async ({ setError, token, nonce, to, amount }) => {
         const usdtInterface = new ethers.utils.Interface(abiErc20);
         callData = usdtInterface.encodeFunctionData("transfer", [
           ethers.utils.getAddress(to),
-          ethers.utils.parseUnits(amount, 6)
+          ethers.utils.parseUnits(amount, 6),
         ]);
         break;
       default:
@@ -59,7 +59,7 @@ const signMessage = async ({ setError, token, nonce, to, amount }) => {
 
     return {
       dataPack,
-      signature
+      signature,
     };
   } catch (err) {
     setError(err.message);
@@ -80,7 +80,7 @@ export default function SignMessage() {
       token: data.get("token"),
       nonce: data.get("nonce"),
       to: data.get("to"),
-      amount: data.get("amount")
+      amount: data.get("amount"),
     });
     if (sig) {
       setSignatures([...signatures, sig]);
@@ -145,7 +145,7 @@ export default function SignMessage() {
         </footer>
         {signatures.map((sig, idx) => {
           return (
-            <div className="p-2" key={sig}>
+            <div className="p-2" key={idx}>
               <div className="my-3">
                 <textarea
                   type="text"
