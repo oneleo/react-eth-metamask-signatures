@@ -4,7 +4,6 @@ import ErrorMessage from "./ErrorMessage";
 import SuccessMessage from "./SuccessMessage";
 
 const verifyMessage = async ({ message, signature }) => {
-  console.log(`message: ${message}\nsignature: ${signature}`);
   const data = ethers.utils.defaultAbiCoder.decode(
     ["address", "address", "uint256", "uint256", "bytes"],
     // from, to , nonce, amount, callData
@@ -18,11 +17,10 @@ const verifyMessage = async ({ message, signature }) => {
       messageToUint8Array,
       signature
     );
-    console.log(signerAddr);
+
     if (signerAddr !== data[0]) {
       return false;
     }
-
     return true;
   } catch (err) {
     console.log(err);
@@ -42,7 +40,7 @@ export default function VerifyMessage() {
     const isValid = await verifyMessage({
       setError,
       message: data.get("message"),
-      signature: data.get("signature")
+      signature: data.get("signature"),
     });
 
     if (isValid) {

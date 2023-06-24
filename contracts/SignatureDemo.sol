@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0 <0.9.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
 
 contract SignatureDemo {
-    mapping(address => uint256) private _nonces;
+    mapping(address => uint256) public nonces;
 
     function executeWithoutNonce(
         bytes memory _data, // _data = abi.encode(address signer, address to, uint256 nonce, uint256 amount, bytes memory callData);
@@ -21,11 +21,11 @@ contract SignatureDemo {
         checkSignature(signer, _data, _signature);
 
         // Proceed with the transaction operation based on the values of to, value, and callData.
-        // If callData.length == 0, you need to transfer an equal amount of ETH when calling the execute() function.
-        // If callData.length != 0, you need to first approve() and transfer an equal amount of ERC20 tokens to this contract before calling the execute() function.
+        // If you want to transfer ETH (callData.length == 0), you need to transfer an equal amount of ETH to this contract before or at the same time as calling the executeWithoutNonce() or executeWithNonce() functions.
+        // If you want to transfer USDT (callData.length != 0), you need to transfer an equal amount of ERC20 tokens to this contract before calling the executeWithoutNonce() or executeWithNonce() functions.
         // 根據解析出來的 to、value、callData 值來進行後續的交易操作。
-        // 如果 callData.length == 0，則您需在呼叫 execute() 函數的同時轉入與 value 等量的 ETH
-        // 如果 callData.length != 0，則您需在呼叫 execute() 函數前，先 approve() 與 value 等量的 ERC20 給 this 合約
+        // 如果您要轉送 ETH（callData.length == 0），則您需在呼叫 executeWithoutNonce() 或 executeWithNonce() 函數之前或同時，轉入與 value 等量的 ETH 給 this 合約。
+        // 如果您要轉送 USDT（callData.length != 0），則您需在呼叫 executeWithoutNonce() 或 executeWithNonce() 函數之前，轉入與 value 等量的等量的 ERC20 給 this 合約。
         (bool success, bytes memory result) = payable(to).call{value: value}(
             callData
         );
@@ -67,8 +67,8 @@ contract SignatureDemo {
 
         // Verify that the Nonce value is correct.
         // 確定 Nonce 值正確。
-        require(_nonces[signer] == nonce, "invalid nonce");
-        _nonces[signer]++;
+        require(nonces[signer] == nonce, "Invalid nonce");
+        nonces[signer]++;
 
         checkSignature(signer, _data, _signature);
 

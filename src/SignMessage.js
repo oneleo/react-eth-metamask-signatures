@@ -5,15 +5,36 @@ import { abi as abiErc20 } from "@openzeppelin/contracts/build/contracts/ERC20.j
 
 const signMessage = async ({ setError, token, nonce, to, amount }) => {
   try {
-    console.log(
-      `token: ${token}\nnonce: ${nonce}\nto: ${to}\namount: ${amount}`
-    );
-    if (!window.ethereum)
+    if (!window.ethereum) {
       throw new Error("No crypto wallet found. Please install it.");
-
+    }
     await window.ethereum.request({ method: "eth_requestAccounts" });
+
+    let UsdtAddress = ethers.constants.AddressZero;
+    let UsdtDecimal = 6;
+
+    switch (window.ethereum.networkVersion) {
+      case "1": // Mainnet
+        UsdtAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+        UsdtDecimal = 6;
+        break;
+      case "5": // Goerli
+        UsdtAddress = "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49";
+        UsdtDecimal = 6;
+        break;
+      case "11155111": // Sepolia
+        UsdtAddress = "0x6175a8471C2122f778445e7E07A164250a19E661";
+        // UsdtAddress = "0xB6434EE024892CBD8e3364048a259Ef779542475";
+        UsdtDecimal = 18;
+        break;
+      default:
+        break;
+    }
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
+    const signerAddress = await signer.getAddress();
+    const usdtInterface = new ethers.utils.Interface(abiErc20);
 
     let toAddress = to;
     let value = ethers.BigNumber.from("0");
@@ -24,12 +45,10 @@ const signMessage = async ({ setError, token, nonce, to, amount }) => {
         value = ethers.utils.parseUnits(amount, 18);
         break;
       case "USDT":
-        // target = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT on Mainnet
-        toAddress = "0xC2C527C0CACF457746Bd31B2a698Fe89de2b6d49"; // USDT on Goerli
-        const usdtInterface = new ethers.utils.Interface(abiErc20);
+        toAddress = UsdtAddress;
         callData = usdtInterface.encodeFunctionData("transfer", [
           ethers.utils.getAddress(to),
-          ethers.utils.parseUnits(amount, 6),
+          ethers.utils.parseUnits(amount, UsdtDecimal),
         ]);
         break;
       default:
@@ -44,17 +63,15 @@ const signMessage = async ({ setError, token, nonce, to, amount }) => {
     const dataPack = ethers.utils.defaultAbiCoder.encode(
       ["address", "address", "uint256", "uint256", "bytes"],
       // from, to, nonce, amount, callData
-      [await signer.getAddress(), toAddress, nonce, value, callData]
+      [signerAddress, toAddress, nonce, value, callData]
     );
 
     // const dataHash = ethers.utils.solidityKeccak256(["bytes"], [dataPack]); // Error
     const dataHash = ethers.utils.keccak256(dataPack);
     const dataHashToUint8Array = ethers.utils.arrayify(dataHash);
     const signature = await signer.signMessage(dataHashToUint8Array);
-
-    console.log(`target: ${toAddress}\nvalue: ${value}\ncallData: ${callData}`);
     console.log(
-      `dataPack: ${dataPack}\ndataHash: ${dataHash}\nsignature: ${signature}`
+      `ChainId: ${window.ethereum.networkVersion}\n ↳ USDT Address: ${UsdtAddress}\nToken: ${token}\nSigner: ${signerAddress}\nTo: ${toAddress}\nNonce: ${nonce}\nValue: ${value}\nCallData: ${callData}\nDataHash: ${dataHash}`
     );
 
     return {
