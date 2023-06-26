@@ -2,13 +2,27 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 contract SignatureDemo {
+    address public owner;
     mapping(address => uint256) public nonces;
+
+    fallback() external payable {}
+
+    receive() external payable {}
+
+    constructor() payable {
+        owner = msg.sender;
+    }
 
     function executeWithoutNonce(
         bytes memory _data, // _data = abi.encode(address signer, address to, uint256 nonce, uint256 amount, bytes memory callData);
         bytes memory _signature
     ) external payable {
+        // Note: In practice, the owner must be set for this contract. Only the contract owner can execute this function.
+        // Also, the _data parameter needs to include a field for the hash value of this function, limiting the use of this _data to calling this function only.
+        // 注意事項：在實務上，必須為此合約設置擁有者。只有合約擁有者才能執行此函數；
+        // 此外，_data 參數需要新增一個雜湊值欄位，用於限制該 _data 只能用於呼叫此函數。
         (
+            // bytes32 executeWithoutNonceHash
             address signer,
             address to, // uint256 nonce,
             ,
