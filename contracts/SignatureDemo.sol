@@ -5,17 +5,23 @@ contract SignatureDemo {
     address public owner;
     mapping(address => uint256) public nonces;
 
+    // If msg.data is present and there is no corresponding function, the fallback() function is called.
+    // 如果 msg.data 有值且沒有對應的函數，將呼叫 fallback() 函數。
     fallback() external payable {}
 
+    // When this contract receives Ether and msg.data is empty, the receive() function is called.
+    // 當 this 合約收到以太幣且 msg.data 為空時，將呼叫 receive() 函數。
     receive() external payable {}
 
+    // // When this contract is deployed, the constructor() function is executed.
+    // 當 this 合約被部署時，執行 constructor() 函數。
     constructor() payable {
         owner = msg.sender;
     }
 
     function executeWithoutNonce(
-        bytes memory _data, // _data = abi.encode(address signer, address to, uint256 nonce, uint256 amount, bytes memory callData);
-        bytes memory _signature
+        bytes calldata _data, // _data = abi.encode(address signer, address to, uint256 nonce, uint256 amount, bytes memory callData);
+        bytes calldata _signature
     ) external payable {
         // Note: In practice, the owner must be set for this contract. Only the contract owner can execute this function.
         // Also, the _data parameter needs to include a field for the hash value of this function, limiting the use of this _data to calling this function only.
@@ -29,6 +35,13 @@ contract SignatureDemo {
             uint256 value,
             bytes memory callData
         ) = abi.decode(_data, (address, address, uint256, uint256, bytes));
+
+        // Unless it is the contract owner, the Value limit is set not to exceed 0.01 ether.
+        // 除非是合約擁有者，否則 Value 限制為不超過 0.01 ether。
+        require(
+            owner == msg.sender || value < 0.01 ether,
+            "The withdrawal amount exceeds 0.01 ether."
+        );
 
         // Confirm that _data is signed by the signer.
         // 確認 _data 是由 signer 親簽的。
@@ -51,25 +64,9 @@ contract SignatureDemo {
         }
     }
 
-    // Signer (Remix Signer 0): 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
-    // Private Key of Signer: 0x503f38a9c967ed597e47fe25643985f032b072db8075426a92110f82df48dfcb
-    // Reference: https://github.com/ethereum/remix-project/blob/master/libs/remix-simulator/src/methods/accounts.ts
-    // DataPack:
-    // ↳ Signer: 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
-    // ↳ To (Remix Signer 1): 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2
-    // ↳ Nonce: 0 ~ 2
-    // ↳ Amount: 10 * 10 ^ 18
-    // ↳ CallData: 0x
-    // Message (Nonce = 0): 0x0000000000000000000000005b38da6a701c568545dcfcb03fcb875f56beddc4000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008ac7230489e8000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000
-    // Signature (Nonce = 0): 0x519ec7a7fd09e54cb230cc084c67a268ce71f95f9f33bd62141158b91e851bb745dbd5ea41e98a6a7c2219caac2a4205f80ba871a2d1af4330b447703ed31a581b
-    // Message (Nonce = 1): 0x0000000000000000000000005b38da6a701c568545dcfcb03fcb875f56beddc4000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000008ac7230489e8000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000
-    // Signature (Nonce = 1): 0x361a08b739a9cdb6af573934a121e21549b4d20e51b779f0b9437332bdb794c244d214ca0b08cf0e0109094c3f07ce131b58fb40e746426f8fe80a610779053f1c
-    // Message (Nonce = 2): 0x0000000000000000000000005b38da6a701c568545dcfcb03fcb875f56beddc4000000000000000000000000ab8483f64d9c6d1ecf9b849ae677dd3315835cb200000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000008ac7230489e8000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000
-    // Signature (Nonce = 2): 0x588be60e4e80ed2ea8f8475a928c9054851cd92dfd74bc9ee882496c738116d50279dcf61625743695f919f84bea8e0313cabfcc263c642505b87f2d2e71b55f1c
-
     function executeWithNonce(
-        bytes memory _data,
-        bytes memory _signature
+        bytes calldata _data,
+        bytes calldata _signature
     ) external payable {
         (
             address signer,
@@ -78,6 +75,13 @@ contract SignatureDemo {
             uint256 value,
             bytes memory callData
         ) = abi.decode(_data, (address, address, uint256, uint256, bytes));
+
+        // Unless it is the contract owner, the Value limit is set not to exceed 0.01 ether.
+        // 除非是合約擁有者，否則 Value 限制為不超過 0.01 ether。
+        require(
+            msg.sender == owner || value < 0.01 ether,
+            "The withdrawal amount exceeds 0.01 ether."
+        );
 
         // Verify that the Nonce value is correct.
         // 確定 Nonce 值正確。
@@ -123,5 +127,23 @@ contract SignatureDemo {
             recoveredSigner == _signer,
             "Invalid contract signature provided"
         );
+    }
+
+    // input example: ["0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2", "0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db", "0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB"]
+    function transferBatch(address[] calldata _to) external payable {
+        // Only the contract owner can initiate the transfer.
+        // 只有合約擁有者可以轉帳
+        require(msg.sender == owner, "Only contract owner can transfer");
+        for (uint256 i = 0; i < _to.length; i++) {
+            (bool success, bytes memory result) = payable(_to[i]).call{
+                value: 0.01 ether
+            }("");
+
+            if (!success) {
+                assembly {
+                    revert(add(result, 32), mload(result))
+                }
+            }
+        }
     }
 }
