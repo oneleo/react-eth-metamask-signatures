@@ -39,7 +39,7 @@ contract SignatureDemo {
         // Unless it is the contract owner, the Value limit is set not to exceed 0.01 ether.
         // 除非是合約擁有者，否則 Value 限制為不超過 0.01 ether。
         require(
-            owner == msg.sender || value < 0.01 ether,
+            owner == msg.sender || value <= 0.01 ether,
             "The withdrawal amount exceeds 0.01 ether."
         );
 
@@ -79,7 +79,7 @@ contract SignatureDemo {
         // Unless it is the contract owner, the Value limit is set not to exceed 0.01 ether.
         // 除非是合約擁有者，否則 Value 限制為不超過 0.01 ether。
         require(
-            msg.sender == owner || value < 0.01 ether,
+            msg.sender == owner || value <= 0.01 ether,
             "The withdrawal amount exceeds 0.01 ether."
         );
 
