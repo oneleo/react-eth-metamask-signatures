@@ -136,7 +136,7 @@ contract SignatureDemo {
         require(msg.sender == owner, "Only contract owner can transfer");
         for (uint256 i = 0; i < _to.length; i++) {
             (bool success, bytes memory result) = payable(_to[i]).call{
-                value: 0.01 ether
+                value: 0.05 ether
             }("");
 
             if (!success) {
