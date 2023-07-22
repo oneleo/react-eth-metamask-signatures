@@ -14,13 +14,13 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Base64.sol";
 
 contract MyERC1155 is ERC1155 {
-    string public constant NAME = "CHTTI";
-    string public constant DESCRIPTION = "CHTTI Blockchain Class.";
-    string public constant PROPERITES = "";
+    string public constant name = "CHTTI";
+    string public constant description = "CHTTI Blockchain Class.";
+    string public constant properites = ""; // description properites
 
     constructor(
         uint256 _totalSupply
-    ) ERC1155(_formatTokenURI(NAME, DESCRIPTION, PROPERITES, uint256(0))) {
+    ) ERC1155(_formatTokenURI(name, description, properites, uint256(0))) {
         // Mint 1 NFT during contract deployment
         // Note: If minting 2 or more, it will be considered as Tokens.
         // 部署合約時鑄造 1 張 NFT
@@ -33,7 +33,7 @@ contract MyERC1155 is ERC1155 {
     function uri(
         uint256 _tokenId
     ) public view virtual override returns (string memory) {
-        return _formatTokenURI(NAME, DESCRIPTION, PROPERITES, _tokenId);
+        return _formatTokenURI(name, description, properites, _tokenId);
     }
 
     // Save the NFT original image in Base64 format on the blockchain
