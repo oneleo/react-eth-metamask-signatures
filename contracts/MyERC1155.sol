@@ -14,17 +14,26 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Base64.sol";
 
 contract MyERC1155 is ERC1155 {
+    string public constant NAME = "CHTTI";
+    string public constant DESCRIPTION = "CHTTI Blockchain Class.";
+    string public constant PROPERITES = "";
+
     constructor(
-        string memory _name,
-        string memory _description,
-        string memory _properties,
-        uint256 _tokenId
-    ) ERC1155(formatTokenURI(_name, _description, _properties, _tokenId)) {
+        uint256 _totalSupply
+    ) ERC1155(_formatTokenURI(NAME, DESCRIPTION, PROPERITES, uint256(0))) {
         // Mint 1 NFT during contract deployment
         // Note: If minting 2 or more, it will be considered as Tokens.
         // 部署合約時鑄造 1 張 NFT
         // 註：若鑄造 2 張以上則為 Token
-        _mint(msg.sender, _tokenId, 1, "");
+        for (uint256 i = 1; i <= _totalSupply; i++) {
+            _mint(msg.sender, i, 1, "");
+        }
+    }
+
+    function uri(
+        uint256 _tokenId
+    ) public view virtual override returns (string memory) {
+        return _formatTokenURI(NAME, DESCRIPTION, PROPERITES, _tokenId);
     }
 
     // Save the NFT original image in Base64 format on the blockchain
@@ -33,20 +42,50 @@ contract MyERC1155 is ERC1155 {
     // 將 NFT 原圖轉成 Base64 格式後保存於區塊鏈上
     // 可參考 SVG 圖檔轉成 Base64 線上編輯網站：https://www.svgviewer.dev/
     // 及參考 Base64 線上解譯網站：https://www.base64decode.org/
-    function getSvg(uint256 tokenId) public pure returns (string memory) {
+    function _getSvg(
+        string memory _name,
+        uint256 _tokenId
+    ) internal pure returns (string memory) {
         string
-            memory svgA = "<svg id='Capa_1' enable-background='new 0 0 511.99 511.99' height='512' viewBox='0 0 511.99 511.99' width='512' xmlns='http://www.w3.org/2000/svg'><g><text style='white-space:pre' x='50.0' y='150.0' fill='#000' font-family='Garamond' font-size='50'>#";
+            memory text1 = "<text x='35' y='86' font-family='Garamond' font-size='16'>";
         string
-            memory svgB = "</text><path d='m511.99 120.995c0-24.813-20.186-45-45-45h-421.99c-24.813 0-45 20.187-45 45v270c0 24.814 20.187 45 45 45h421.99c24.814 0 45-20.186 45-45zm-466.99-15h421.99c8.271 0 15 6.729 15 15v35h-451.99v-35c0-8.271 6.729-15 15-15zm421.99 300h-421.99c-8.271 0-15-6.728-15-15v-205h451.99v205c0 8.272-6.729 15-15 15z'/><path d='m198.314 226.296c-4.75 0-8.55 1.52-9.69 5.51l-26.41 97.472-26.601-97.472c-1.14-3.99-4.939-5.51-9.69-5.51-8.17 0-19 5.13-19 12.16 0 .569.19 1.33.38 2.09l35.531 115.901c2.09 6.65 10.64 9.88 19.38 9.88s17.29-3.229 19.38-9.88l35.341-115.901c.189-.76.38-1.521.38-2.09-.001-7.03-10.831-12.16-19.001-12.16z'/><path d='m257.4 226.296c-7.41 0-14.82 2.66-14.82 8.93v120.842c0 6.08 7.41 9.12 14.82 9.12s14.82-3.04 14.82-9.12v-120.843c.001-6.269-7.41-8.929-14.82-8.929z'/><path d='m402.18 269.996c0-31.92-19.76-43.7-44.84-43.7h-39.33c-6.65 0-11.021 4.18-11.021 8.93v120.842c0 6.08 7.41 9.12 14.82 9.12s14.82-3.04 14.82-9.12v-41.04h18.811c26.221 0 46.74-12.16 46.74-44.081zm-29.641 3.231c0 12.92-6.459 19-17.1 19h-18.811v-40.091h18.811c10.641 0 17.1 6.08 17.1 19.001z'/></g></svg>";
-        return string(abi.encodePacked(svgA, uint2str(tokenId), svgB));
+            memory text2 = " VIP</text><text x='15' y='100' font-family='Garamond' font-size='10'>#";
+        string memory text3 = "</text></svg>";
+        string
+            memory svgA = "<svg height='512' viewBox='0 0 128 128' width='512' xmlns='http://www.w3.org/2000/svg'><rect fill='#ffcd3c' height='76.504' rx='7.694' width='117.9' x='6.767' y='27.232'/><path d='M6.767 39.75h117.9v16.583H6.767z' fill='#0d1b5e'/><g fill='#fceac3'><rect height='8.174' rx='3.297' width='20.422' x='92.512' y='88.159'/><rect height='9.742' rx='1.615' width='48.718' x='16.999' y='63'/></g>";
+        string
+            memory svgB = "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 128 128'><path d='M116.973 25.482H14.461a9.455 9.455 0 0 0-9.444 9.444v61.116a9.454 9.454 0 0 0 9.444 9.443h102.512a9.454 9.454 0 0 0 9.444-9.443V34.926a9.455 9.455 0 0 0-9.444-9.444Zm5.944 70.56a5.951 5.951 0 0 1-5.944 5.943H14.461a5.951 5.951 0 0 1-5.944-5.943V56.677h114.4Zm0-42.865H8.517V42.5h114.4Zm0-14.177H8.517v-4.074a5.951 5.951 0 0 1 5.944-5.944h102.512a5.951 5.951 0 0 1 5.944 5.944Z'/><path d='M95.81 98.083h13.827a5.053 5.053 0 0 0 5.048-5.047v-1.579a5.054 5.054 0 0 0-5.048-5.048H95.81a5.054 5.054 0 0 0-5.048 5.048v1.579a5.053 5.053 0 0 0 5.048 5.047Zm-1.548-6.626a1.55 1.55 0 0 1 1.548-1.548h13.827a1.55 1.55 0 0 1 1.548 1.548v1.579a1.55 1.55 0 0 1-1.548 1.547H95.81a1.55 1.55 0 0 1-1.548-1.547ZM18.614 74.492H64.1a3.369 3.369 0 0 0 3.365-3.365v-6.513A3.368 3.368 0 0 0 64.1 61.25H18.614a3.368 3.368 0 0 0-3.365 3.364v6.513a3.369 3.369 0 0 0 3.365 3.365Zm.135-9.742h45.218v6.242H18.749Z'/>";
+
+        return
+            _tokenId == 1
+                ? string(
+                    abi.encodePacked(
+                        svgA,
+                        text1,
+                        _name,
+                        text2,
+                        _uint2str(_tokenId),
+                        text3
+                    )
+                )
+                : string(
+                    abi.encodePacked(
+                        svgB,
+                        text1,
+                        _name,
+                        text2,
+                        _uint2str(_tokenId),
+                        text3
+                    )
+                );
     }
 
-    function formatTokenURI(
+    function _formatTokenURI(
         string memory _name,
         string memory _description,
         string memory _properties,
         uint256 _tokenId
-    ) public pure returns (string memory) {
+    ) internal pure returns (string memory) {
         // Set the _uri with the original image data to comply with OpenSea standards: https://docs.opensea.io/docs/metadata-standards#metadata-structure
         // During testing, you can use this JSON validation website: https://jsonformatter.curiousconcept.com/
         // 設置 _uri 圖檔原始資料以符合 OpenSea 標準：https://docs.opensea.io/docs/metadata-standards#metadata-structure
@@ -62,7 +101,7 @@ contract MyERC1155 is ERC1155 {
                         _description,
                         '",',
                         '"image_data": "',
-                        getSvg(_tokenId),
+                        _getSvg(_name, _tokenId),
                         '",',
                         '"attributes": "',
                         _properties,
@@ -76,9 +115,9 @@ contract MyERC1155 is ERC1155 {
 
     // Convert integers to strings in the contract.
     // 在合約中將整數轉成字串
-    function uint2str(
+    function _uint2str(
         uint256 _i
-    ) public pure returns (string memory _uintAsString) {
+    ) internal pure returns (string memory _uintAsString) {
         if (_i == 0) {
             return "0";
         }
