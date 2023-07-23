@@ -17,16 +17,37 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.9
 
 contract MyERC1155 is ERC1155 {
     using SafeMath for uint256;
+
+    address public author;
     string public constant name = "CHTTI"; // This 'name' is a required value for OpenSea, primarily used to display the name of the NFT smart contract.
-    string public constant description = "CHTTI Blockchain Class.";
-    string public constant properites = "";
-    uint256 public constant price = 0.01 ether; // Price to mint this NFT
+    string public constant description = "## CHTTI Blockchain Class";
+    string public constant attributes = "";
+    string public constant backgroundColor = "1F65AC";
+    string public constant externalUrl = "https://www.chtti.cht.com.tw/";
+    uint256 public constant price = 0.0001 ether; // Price to mint this NFT
     uint256 public constant tokenIdMax = 99; // Maximum value of tokenId
     uint256 public constant tokenIdMin = 1; // Minimum value of tokenId
 
     constructor(
         uint256 _initialSupply
-    ) ERC1155(_formatTokenURI(name, description, properites, uint256(0))) {
+    )
+        // Initialize the base URI.
+        // 初始化基礎 URI。
+        ERC1155(
+            _formatTokenURI(
+                name,
+                description,
+                attributes,
+                backgroundColor,
+                externalUrl,
+                uint256(0)
+            )
+        )
+    {
+        // Set the smart contract author.
+        // 設置智能合約作者。
+        author = msg.sender;
+
         // Mint 1 copy of each NFT upon contract deployment.
         // Note: If minting 2 or more, it will be considered as Tokens.
         // 部署合約時鑄造各 1 張 NFT。
@@ -39,15 +60,33 @@ contract MyERC1155 is ERC1155 {
     function uri(
         uint256 _tokenId
     ) public view virtual override returns (string memory) {
-        return _formatTokenURI(name, description, properites, _tokenId);
+        return
+            _formatTokenURI(
+                name,
+                description,
+                attributes,
+                backgroundColor,
+                externalUrl,
+                _tokenId
+            );
     }
 
     function mint() external payable returns (uint256) {
         require(msg.value >= price, "Value must be greater than price.");
+        // Transfer the minting fee to the NFT author.
+        // 將鑄造費轉給 NFT 作者。
+        (bool success, bytes memory result) = payable(author).call{
+            value: price
+        }("");
+        if (!success) {
+            assembly {
+                revert(add(result, 32), mload(result))
+            }
+        }
         // Refund any excess ether
         // 將多餘的 ether 退還。
         if (msg.value > price) {
-            (bool success, bytes memory result) = payable(msg.sender).call{
+            (success, result) = payable(msg.sender).call{
                 value: msg.value.sub(price)
             }("");
             if (!success) {
@@ -83,9 +122,9 @@ contract MyERC1155 is ERC1155 {
             memory text2 = " VIP</text><text x='15' y='100' font-family='Garamond' font-size='10'>#";
         string memory text3 = "</text></svg>";
         string
-            memory svgA = "<svg height='512' viewBox='0 0 128 128' width='512' xmlns='http://www.w3.org/2000/svg'><rect fill='#ffcd3c' height='76.504' rx='7.694' width='117.9' x='6.767' y='27.232'/><path d='M6.767 39.75h117.9v16.583H6.767z' fill='#0d1b5e'/><g fill='#fceac3'><rect height='8.174' rx='3.297' width='20.422' x='92.512' y='88.159'/><rect height='9.742' rx='1.615' width='48.718' x='16.999' y='63'/></g>";
+            memory svgA = "<svg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'><rect fill='#ffcd3c' height='76.504' rx='7.694' width='117.9' x='6.767' y='27.232'/><path d='M6.767 39.75h117.9v16.583H6.767z' fill='#0d1b5e'/><g fill='#fceac3'><rect height='8.174' rx='3.297' width='20.422' x='92.512' y='88.159'/><rect height='9.742' rx='1.615' width='48.718' x='16.999' y='63'/></g>";
         string
-            memory svgB = "<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 128 128'><path d='M116.973 25.482H14.461a9.455 9.455 0 0 0-9.444 9.444v61.116a9.454 9.454 0 0 0 9.444 9.443h102.512a9.454 9.454 0 0 0 9.444-9.443V34.926a9.455 9.455 0 0 0-9.444-9.444Zm5.944 70.56a5.951 5.951 0 0 1-5.944 5.943H14.461a5.951 5.951 0 0 1-5.944-5.943V56.677h114.4Zm0-42.865H8.517V42.5h114.4Zm0-14.177H8.517v-4.074a5.951 5.951 0 0 1 5.944-5.944h102.512a5.951 5.951 0 0 1 5.944 5.944Z'/><path d='M95.81 98.083h13.827a5.053 5.053 0 0 0 5.048-5.047v-1.579a5.054 5.054 0 0 0-5.048-5.048H95.81a5.054 5.054 0 0 0-5.048 5.048v1.579a5.053 5.053 0 0 0 5.048 5.047Zm-1.548-6.626a1.55 1.55 0 0 1 1.548-1.548h13.827a1.55 1.55 0 0 1 1.548 1.548v1.579a1.55 1.55 0 0 1-1.548 1.547H95.81a1.55 1.55 0 0 1-1.548-1.547ZM18.614 74.492H64.1a3.369 3.369 0 0 0 3.365-3.365v-6.513A3.368 3.368 0 0 0 64.1 61.25H18.614a3.368 3.368 0 0 0-3.365 3.364v6.513a3.369 3.369 0 0 0 3.365 3.365Zm.135-9.742h45.218v6.242H18.749Z'/>";
+            memory svgB = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><path d='M116.973 25.482H14.461a9.455 9.455 0 0 0-9.444 9.444v61.116a9.454 9.454 0 0 0 9.444 9.443h102.512a9.454 9.454 0 0 0 9.444-9.443V34.926a9.455 9.455 0 0 0-9.444-9.444Zm5.944 70.56a5.951 5.951 0 0 1-5.944 5.943H14.461a5.951 5.951 0 0 1-5.944-5.943V56.677h114.4Zm0-42.865H8.517V42.5h114.4Zm0-14.177H8.517v-4.074a5.951 5.951 0 0 1 5.944-5.944h102.512a5.951 5.951 0 0 1 5.944 5.944Z'/><path d='M95.81 98.083h13.827a5.053 5.053 0 0 0 5.048-5.047v-1.579a5.054 5.054 0 0 0-5.048-5.048H95.81a5.054 5.054 0 0 0-5.048 5.048v1.579a5.053 5.053 0 0 0 5.048 5.047Zm-1.548-6.626a1.55 1.55 0 0 1 1.548-1.548h13.827a1.55 1.55 0 0 1 1.548 1.548v1.579a1.55 1.55 0 0 1-1.548 1.547H95.81a1.55 1.55 0 0 1-1.548-1.547ZM18.614 74.492H64.1a3.369 3.369 0 0 0 3.365-3.365v-6.513A3.368 3.368 0 0 0 64.1 61.25H18.614a3.368 3.368 0 0 0-3.365 3.364v6.513a3.369 3.369 0 0 0 3.365 3.365Zm.135-9.742h45.218v6.242H18.749Z'/>";
 
         return
             _tokenId == 1
@@ -114,7 +153,9 @@ contract MyERC1155 is ERC1155 {
     function _formatTokenURI(
         string memory _name,
         string memory _description,
-        string memory _properties,
+        string memory _attributes,
+        string memory _backgroundColor,
+        string memory _externalUrl,
         uint256 _tokenId
     ) internal pure returns (string memory) {
         // Set the _uri with the original image data to comply with OpenSea standards: https://docs.opensea.io/docs/metadata-standards#metadata-structure
@@ -125,17 +166,45 @@ contract MyERC1155 is ERC1155 {
             bytes(
                 string(
                     abi.encodePacked(
+                        // Name of the item.
+                        // 項目的名稱。
                         '{"name": "',
                         _name,
                         '",',
+                        // A human readable description of the item. Markdown is supported.
+                        // 對項目的人類可讀描述。支援 Markdown 格式。
                         '"description": "',
                         _description,
                         '",',
+                        // Raw SVG image data, if you want to generate images on the fly. Only use this if you're not including the image parameter.
+                        // 原始 SVG 圖像資料，如果您希望動態生成圖像。僅在不包含 image 參數時使用。
                         '"image_data": "',
                         _getSvg(_name, _tokenId),
                         '",',
+                        // This is the URL to the image of the item. Can be just about any type of image (including SVGs, which will be cached into PNGs by OpenSea), and can be IPFS URLs or paths. We recommend using a 350 x 350 image.
+                        // 這是項目圖像的 URL。可以是任何類型的圖像（包括 SVG，OpenSea 將將其轉換為 PNG 並進行快取），並且可以是 IPFS URL 或路徑。建議使用 350 x 350 的圖像大小。
+                        // '"image": "',
+                        // _image,
+                        // '",',
+                        // Background color of the item on OpenSea. Must be a six-character hexadecimal without a pre-pended #.
+                        // 在 OpenSea 上顯示項目的背景顏色。必須是六個字符的十六進制值，不包含 #。
+                        '"background_color": "',
+                        _backgroundColor,
+                        '",',
+                        // This is the URL that will appear below the asset's image on OpenSea and will allow users to leave OpenSea and view the item on your site.
+                        // 這是在 OpenSea 上項目圖像下方顯示的 URL，用戶可以通過此 URL 離開 OpenSea，並在您的網站上查看該項目。
+                        '"external_url": "',
+                        _externalUrl,
+                        '",',
+                        // A URL to a YouTube video.
+                        // 一個指向 YouTube 影片的 URL。
+                        // '"youtube_url": "',
+                        // _youtubeUrl,
+                        // '",',
+                        // These are the attributes for the item, which will show up on the OpenSea page for the item.
+                        // 這些是項目的屬性，在 OpenSea 頁面上會顯示出來。
                         '"attributes": "',
-                        _properties,
+                        _attributes,
                         '"}'
                     )
                 )
