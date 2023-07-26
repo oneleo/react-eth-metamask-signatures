@@ -184,7 +184,7 @@ contract MyERC1155 is ERC1155 {
                         // This is the URL to the image of the item. Can be just about any type of image (including SVGs, which will be cached into PNGs by OpenSea), and can be IPFS URLs or paths. We recommend using a 350 x 350 image.
                         // 這是項目圖像的 URL。可以是任何類型的圖像（包括 SVG，OpenSea 將將其轉換為 PNG 並進行快取），並且可以是 IPFS URL 或路徑。建議使用 350 x 350 的圖像大小。
                         // '"image": "',
-                        // _image,
+                        // _image, // Example: "ipfs://QmS4dzwJi85Et3ox2UPFEDMFvwx9bADThYSr9LKXXvWYEX"
                         // '",',
                         // Background color of the item on OpenSea. Must be a six-character hexadecimal without a pre-pended #.
                         // 在 OpenSea 上顯示項目的背景顏色。必須是六個字符的十六進制值，不包含 #。
