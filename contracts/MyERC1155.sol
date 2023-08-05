@@ -19,27 +19,27 @@ contract MyERC1155 is ERC1155 {
     using SafeMath for uint256;
 
     address public author;
-    string public constant name = "CHTTI"; // This 'name' is a required value for OpenSea, primarily used to display the name of the NFT smart contract.
-    string public constant description = "## CHTTI Blockchain Class";
-    string public constant attributes = "";
-    string public constant backgroundColor = "1F65AC";
-    string public constant externalUrl = "https://www.chtti.cht.com.tw/";
-    uint256 public constant price = 0.0001 ether; // Price to mint this NFT
-    uint256 public constant tokenIdMax = 99; // Maximum value of tokenId
-    uint256 public constant tokenIdMin = 1; // Minimum value of tokenId
+    string public constant name = "CHTTI"; // 這個 'name' 是 OpenSea 所需的值，主要用於顯示 NFT 智能合約的名稱
+    string private constant _myERC1155Description = "## CHTTI Blockchain Class";
+    string private constant _myERC1155Attributes = "";
+    string private constant _myERC1155BackgroundColor = "1F65AC";
+    string private constant _myERC1155ExternalUrl =
+        "https://www.chtti.cht.com.tw/";
+    uint256 private constant _myERC1155InitialSupply = 3;
+    uint256 public constant price = 0.0001 ether; // 鑄造 NFT 的價格
+    uint256 public constant tokenIdMax = 99; // 隨機產生 tokenId 的最大值
+    uint256 public constant tokenIdMin = 1; // 隨機產生 tokenId 的最小值
 
-    constructor(
-        uint256 _initialSupply
-    )
+    constructor()
         // Initialize the base URI.
         // 初始化基礎 URI。
         ERC1155(
             _formatTokenURI(
                 name,
-                description,
-                attributes,
-                backgroundColor,
-                externalUrl,
+                _myERC1155Description,
+                _myERC1155Attributes,
+                _myERC1155BackgroundColor,
+                _myERC1155ExternalUrl,
                 uint256(0)
             )
         )
@@ -52,7 +52,7 @@ contract MyERC1155 is ERC1155 {
         // Note: If minting 2 or more, it will be considered as Tokens.
         // 部署合約時鑄造各 1 張 NFT。
         // 註：若鑄造 2 張以上則為 Token。
-        for (uint256 i = 1; i <= _initialSupply; i++) {
+        for (uint256 i = 1; i <= _myERC1155InitialSupply; i++) {
             _mint(msg.sender, i, 1, "");
         }
     }
@@ -63,10 +63,10 @@ contract MyERC1155 is ERC1155 {
         return
             _formatTokenURI(
                 name,
-                description,
-                attributes,
-                backgroundColor,
-                externalUrl,
+                _myERC1155Description,
+                _myERC1155Attributes,
+                _myERC1155BackgroundColor,
+                _myERC1155ExternalUrl,
                 _tokenId
             );
     }
