@@ -22,9 +22,18 @@ contract MyERC20 is ERC20 {
     uint256 private constant _myERC20InitialSupply = 2412 * 10 ** 10; // Token 發行者可獲得的初始數量
     uint256 public constant price = 0.0000001 ether; // 鑄造 Token 的價格
 
-    constructor() ERC20(_myERC20Name, _myERC20Symbol) {
+    constructor() payable ERC20(_myERC20Name, _myERC20Symbol) {
+        // Set the smart contract issuer.
+        // 設置智能合約發行者。
         issuer = msg.sender;
-        _mint(msg.sender, _myERC20InitialSupply.mul(10 ** 18));
+
+        // If there is ether attached when deploying the contract, transfer it to the issuer.
+        // 如果部署合約時有夾帶 ether，則轉給 issuer。
+        payable(issuer).transfer(msg.value);
+
+        // Mint _myERC20InitialSupply amount of tokens when deploying the contract.
+        // 部署合約時鑄造 _myERC20InitialSupply 個數量的 Token。
+        _mint(msg.sender, _myERC20InitialSupply.mul(10 ** ERC20.decimals()));
     }
 
     function mint() external payable {
@@ -39,6 +48,18 @@ contract MyERC20 is ERC20 {
                 revert(add(result, 32), mload(result))
             }
         }
-        _mint(msg.sender, msg.value.div(price));
+        _mint(msg.sender, msg.value.mul(10 ** ERC20.decimals()).div(price));
+    }
+
+    // If msg.data is present and there is no corresponding function, the fallback() function is called.
+    // 如果 msg.data 有值且沒有對應的函數，將呼叫 fallback() 函數。
+    fallback() external payable {
+        payable(issuer).transfer(msg.value);
+    }
+
+    // When this contract receives Ether and msg.data is empty, the receive() function is called.
+    // 當 this 合約收到以太幣且 msg.data 為空時，將呼叫 receive() 函數。
+    receive() external payable {
+        payable(issuer).transfer(msg.value);
     }
 }

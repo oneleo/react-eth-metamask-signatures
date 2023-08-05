@@ -31,9 +31,10 @@ contract MyERC1155 is ERC1155 {
     uint256 public constant tokenIdMin = 1; // 隨機產生 tokenId 的最小值
 
     constructor()
-        // Initialize the base URI.
-        // 初始化基礎 URI。
+        payable
         ERC1155(
+            // Initialize the base URI.
+            // 初始化基礎 URI。
             _formatTokenURI(
                 name,
                 _myERC1155Description,
@@ -47,6 +48,10 @@ contract MyERC1155 is ERC1155 {
         // Set the smart contract author.
         // 設置智能合約作者。
         author = msg.sender;
+
+        // If there is ether attached when deploying the contract, transfer it to the issuer.
+        // 如果部署合約時有夾帶 ether，則轉給 issuer。
+        payable(author).transfer(msg.value);
 
         // Mint 1 copy of each NFT upon contract deployment.
         // Note: If minting 2 or more, it will be considered as Tokens.
@@ -237,5 +242,17 @@ contract MyERC1155 is ERC1155 {
             _i /= 10;
         }
         return string(bstr);
+    }
+
+    // If msg.data is present and there is no corresponding function, the fallback() function is called.
+    // 如果 msg.data 有值且沒有對應的函數，將呼叫 fallback() 函數。
+    fallback() external payable {
+        payable(author).transfer(msg.value);
+    }
+
+    // When this contract receives Ether and msg.data is empty, the receive() function is called.
+    // 當 this 合約收到以太幣且 msg.data 為空時，將呼叫 receive() 函數。
+    receive() external payable {
+        payable(author).transfer(msg.value);
     }
 }

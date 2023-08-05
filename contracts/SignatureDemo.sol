@@ -7,7 +7,9 @@ contract SignatureDemo {
 
     // If msg.data is present and there is no corresponding function, the fallback() function is called.
     // 如果 msg.data 有值且沒有對應的函數，將呼叫 fallback() 函數。
-    fallback() external payable {}
+    fallback() external payable {
+        payable(owner).transfer(msg.value);
+    }
 
     // When this contract receives Ether and msg.data is empty, the receive() function is called.
     // 當 this 合約收到以太幣且 msg.data 為空時，將呼叫 receive() 函數。
@@ -145,5 +147,10 @@ contract SignatureDemo {
                 }
             }
         }
+    }
+
+    function withdrawal() external payable {
+        require(msg.sender == owner, "Only contract owner can withdraw");
+        payable(owner).transfer(address(this).balance);
     }
 }
